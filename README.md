@@ -1,19 +1,19 @@
-# Playwright QA Automation Portfolio
+# Playwright QA自動化ポートフォリオ
 
-This is a portfolio of end-to-end UI and API tests using Playwright.
+こちらは、Playwrightを使用したエンドツーエンドのUIおよびAPIテストのポートフォリオです。
 
-## Tech Stack
+## 技術スタック
 - Playwright
 - JavaScript
-- GitHub Actions CI
-- HTML Reports
+- GitHub ActionsでのContinuous Integration
+- HTMLレポート
 
-## Test Coverage
-- Login flow (https://www.saucedemo.com/)
-- Shopping cart behavior
-- Error handling tests
+## テスト範囲
+- ログインフロー (https://www.saucedemo.com/)
+- ショッピングカートの挙動
+- エラーハンドリングのテスト
 
-## How to Run
+## 実行方法
 ```bash
 npm install
 npx playwright test
