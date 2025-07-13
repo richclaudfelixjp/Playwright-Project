@@ -7,8 +7,8 @@ test('ログインが成功しました', async ({ page }) => {
   await page.fill('#password', 'secret_sauce');
   await page.click('#login-button');
 
-  await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); //URLが期待通りになったかどうかを確認されています
-  await expect(page.locator('.inventory_list')).toBeVisible(); //ウェブサイト内の要素をアサートされています
+  await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); //URLが期待通りになったかどうか確認されています
+  await expect(page.locator('.inventory_list')).toBeVisible(); //ログイン成功後、ウェブサイト内の要素がアサートされています
 });
 
 test('ログインが失敗しました', async ({ page }) => {
