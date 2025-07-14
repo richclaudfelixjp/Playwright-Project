@@ -9,9 +9,9 @@
 - HTMLレポート
 
 ## テスト範囲
-- ログインフロー (https://www.saucedemo.com/)
-- ショッピングカートの挙動
-- エラーハンドリングのテスト
+- UIテスト　(https://www.saucedemo.com/)
+- APIテスト　(https://reqres.in/api/)
+- 先進テスト　(https://demoqa.com/)
 
 ## 実行方法
 ```bash
