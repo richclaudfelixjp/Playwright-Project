@@ -36,6 +36,7 @@ export default defineConfig({
     screenshot: 'only-on-failure', //テストが失敗した場合、スクリーンショットを取得します
     video: 'retain-on-failure',    //テストが失敗した場合、録画を行います
     trace: 'retain-on-failure',    //テストが失敗した場合、痕跡を取材します
+    ignoreHTTPSErrors: true,       //SSL証明書エラーを無視します
   },
 
   /* Configure projects for major browsers */
