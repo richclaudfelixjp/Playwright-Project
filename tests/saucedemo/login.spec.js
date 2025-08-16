@@ -1,22 +1,22 @@
 const { test, expect } = require('@playwright/test');
 
-test('ログインが成功しました', async ({ page }) => {
-  await page.goto('https://www.saucedemo.com/'); //ウェブサイトを開きます
+test('ログイン成功', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com/'); //ウェブサイトに移動
 
-  await page.fill('#user-name', 'standard_user'); //正しいユーザーが入力されます
-  await page.fill('#password', 'secret_sauce'); //正しいパスワードが入力されます
-  await page.click('#login-button'); //ログインボタンがクリックされます
+  await page.fill('#user-name', 'standard_user'); //正しいユーザーを入力
+  await page.fill('#password', 'secret_sauce'); //正しいパスワードを入力
+  await page.click('#login-button'); //ログインボタンをクリック
 
-  await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); //URLが期待通りになったかどうか確認されます
-  await expect(page.locator('.inventory_list')).toBeVisible(); //ログイン成功後、ウェブサイト内の要素がアサートされます
+  await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html'); //URLを期待通りになったかどうか確認
+  await expect(page.locator('.inventory_list')).toBeVisible(); //ログイン成功後、ウェブサイト内の要素をアサート
 });
 
-test('ログインが失敗しました', async ({ page }) => {
-  await page.goto('https://www.saucedemo.com/'); ////ウェブサイトを開きます
+test('ログイン失敗', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com/'); //ウェブサイトに移動
 
-  await page.fill('#user-name', 'locked_out_user'); //意図的に違ったユーザーが入力されます
-  await page.fill('#password', 'wrong_password'); //意図的に違ったパスワードが入力されます
-  await page.click('#login-button'); //ログインボタンがクリックされます
+  await page.fill('#user-name', 'locked_out_user'); //意図的に違ったユーザーを入力
+  await page.fill('#password', 'wrong_password'); //意図的に違ったパスワードを入力
+  await page.click('#login-button'); //ログインボタンをクリック
 
-  await expect(page.locator('[data-test="error"]')).toContainText('Epic sadface'); //ログイン失敗のエラーメッセージがアサートされます
+  await expect(page.locator('[data-test="error"]')).toContainText('Epic sadface'); //ログイン失敗のエラーメッセージをアサート
 });

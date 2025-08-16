@@ -32,11 +32,11 @@ export default defineConfig({
     // baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    headless: true,　//テストが失敗した場合、詳細を見えるためブラウザのUIを表示します
-    screenshot: 'only-on-failure', //テストが失敗した場合、スクリーンショットを取得します
-    video: 'retain-on-failure',    //テストが失敗した場合、録画を行います
-    trace: 'retain-on-failure',    //テストが失敗した場合、痕跡を取材します
-    ignoreHTTPSErrors: true,       //SSL証明書エラーを無視します
+    headless: true,　//テストが失敗した場合、詳細を見えるためブラウザのUIを表示
+    screenshot: 'only-on-failure', //テストが失敗した場合、スクリーンショットを取得
+    video: 'retain-on-failure',    //テストが失敗した場合録画を行い
+    trace: 'retain-on-failure',    //テストが失敗した場合痕跡を取材
+    ignoreHTTPSErrors: true,       //SSL証明書エラーを無視
     navigationTimeout: 60000,      //ページナビゲーションのタイムアウトを60秒に延長
     actionTimeout: 30000,          //アクションのタイムアウトを30秒に設定
   },
