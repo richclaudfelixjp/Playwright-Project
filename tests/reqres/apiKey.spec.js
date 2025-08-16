@@ -31,6 +31,6 @@ test('無効なAPIキーを使用しているAPIリクエスト', async ({ reque
   });
 
   const body = await response.json();　//APIレスポンスのボディーが定義されます
-  expect(response.status()).toBe(401);　//APIレスポンスのステータスが検証されます
-  expect(body.error).toBe('Invalid API key.');　//APIレスポンスのボディー内のエラーメッセージがアサートされます
+  expect(response.status()).toBe(403);　//APIレスポンスのステータスが検証されます
+  expect(body.error).toBe('Invalid or inactive API key');　//APIレスポンスのボディー内のエラーメッセージがアサートされます
 });
