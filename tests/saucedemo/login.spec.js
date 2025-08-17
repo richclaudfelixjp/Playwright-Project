@@ -50,6 +50,8 @@ test('異なるユーザータイプでのログイン確認', async ({ page }) 
 
   // ログアウト
   await page.click('#react-burger-menu-btn');
+  await expect(page.locator('.bm-menu')).toBeVisible();
+  await page.locator('.bm-item-list').waitFor();
   await page.click('#logout_sidebar_link');
   await expect(page).toHaveURL('https://www.saucedemo.com/');
 
@@ -62,6 +64,8 @@ test('異なるユーザータイプでのログイン確認', async ({ page }) 
 
   // ログアウト
   await page.click('#react-burger-menu-btn');
+  await expect(page.locator('.bm-menu')).toBeVisible();
+  await page.locator('.bm-item-list').waitFor();
   await page.click('#logout_sidebar_link');
   await expect(page).toHaveURL('https://www.saucedemo.com/');
 });
