@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "external": "npx playwright test tests/reqres tests/saucedemo"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
