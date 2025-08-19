@@ -11,10 +11,10 @@ on:
         - staging
         - production
   repository_dispatch:
-    types: [cloudjp-tests]
+    types: [cloudjp-test]
 
 jobs:
-  playwright:
+  cloudjp-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
