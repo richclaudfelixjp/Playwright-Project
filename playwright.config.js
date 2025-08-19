@@ -8,6 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined, //CI環境では1つのワーカー、ローカルでは自動設定
   reporter: [['html', { open: 'never' }]], //HTMLレポートを生成（自動で開かない）
   use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000', //ベースURLを環境変数から取得、デフォルトはローカルサーバー
     headless: true, //テストが失敗した場合、詳細を見えるためブラウザのUIを表示
     screenshot: 'only-on-failure', //テストが失敗した場合、スクリーンショットを取得
     video: 'retain-on-failure', //テストが失敗した場合、録画を行い
