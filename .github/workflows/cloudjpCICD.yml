@@ -65,7 +65,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
-          repository: richclaudfelix3019/cloud.jp
+          repository: richclaudfelixjp/cloud.jp
           event-type: staging-tests-passed
           client-payload: |
             {
