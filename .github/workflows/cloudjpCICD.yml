@@ -1,4 +1,4 @@
-name: cloudjp CI/CD
+name: cloudjp playwright tests
 on:
   workflow_dispatch:
     inputs:
@@ -14,7 +14,7 @@ on:
     types: [cloudjp-test]
 
 jobs:
-  cloudjp-tests:
+  cloudjp-playwright-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,3 +39,17 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+
+      - name: cloud.jpに成功ステータスを送信
+        if: success() && github.event.client_payload.environment == 'staging'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
+          repository: richclaudfelixjp/cloud.jp
+          event-type: staging-tests-passed
+          client-payload: |
+            {
+              "commit_sha": "${{ github.event.client_payload.commit_sha }}",
+              "environment": "staging",
+              "test_result": "passed"
+            }
