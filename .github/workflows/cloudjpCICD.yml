@@ -1,4 +1,4 @@
-name: cloudjp playwright tests
+name: cloudjp CI/CD
 on:
   workflow_dispatch:
     inputs:
@@ -14,7 +14,7 @@ on:
     types: [cloudjp-test]
 
 jobs:
-  cloudjp-playwright-tests:
+  cloudjp-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,16 +28,36 @@ jobs:
       - name: CI用のPlaywrightをインストール
         run: npx playwright install --with-deps
 
+      - name: テスト環境を決定
+        id: determine-env
+        run: |
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.client_payload.environment }}"
+            BASE_URL="${{ github.event.client_payload.url }}"
+          else
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            if [[ "$ENVIRONMENT" == "production" ]]; then
+              BASE_URL="${{ secrets.PROD_URL }}"
+            else
+              BASE_URL="${{ secrets.STAGING_URL }}"
+            fi
+          fi
+          
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "base_url=$BASE_URL" >> $GITHUB_OUTPUT
+          echo "🎯 Testing environment: $ENVIRONMENT"
+          echo "🌐 Testing URL: $BASE_URL"
+
       - name: Playwrightテストを実行
         run: npm run cloudjp
         env:
-          BASE_URL: ${{ github.event.inputs.environment == 'production' && secrets.PROD_URL || secrets.STAGING_URL }}
+          BASE_URL: ${{ steps.determine-env.outputs.base_url }}
       
       - name: テスト結果をアップロード
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ steps.determine-env.outputs.environment }}
           path: playwright-report/
 
       - name: cloud.jpに成功ステータスを送信
@@ -45,7 +65,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
-          repository: richclaudfelixjp/cloud.jp
+          repository: richclaudfelix3019/cloud.jp
           event-type: staging-tests-passed
           client-payload: |
             {
