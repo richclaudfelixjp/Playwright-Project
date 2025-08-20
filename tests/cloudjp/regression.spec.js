@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('ナビゲーションチェック', async ({ page }) => {
   // ウェブサイトに移動
-  await page.goto(baseURL);
+  await page.goto('/');
   
   // 自己紹介セクションへのナビゲーション
   await page.getByRole('link', { name: '自己紹介' }).click();
@@ -27,7 +27,7 @@ test('ナビゲーションチェック', async ({ page }) => {
 
 test('言語設定', async ({ page }) => {
   // ウェブサイトに移動
-  await page.goto(baseURL);
+  await page.goto('/');
   
   // 日本語から英語への言語切り替え
   await page.getByRole('button', { name: '言語を選択' }).click(); // 言語選択ボタンをクリック
