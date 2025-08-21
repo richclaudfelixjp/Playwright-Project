@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'テストする環境'
+        description: 'テスト環境'
         required: true
         default: 'staging'
         type: choice
@@ -13,6 +13,11 @@ on:
   repository_dispatch:
     types: [cloudjp-test]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: read
+
 jobs:
   cloudjp-tests:
     runs-on: ubuntu-latest
@@ -21,12 +26,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
       
       - name: CI用の依存関係をインストール
         run: npm ci
 
       - name: CI用のPlaywrightをインストール
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: テスト環境を決定
         id: determine-env
@@ -47,9 +53,21 @@ jobs:
           echo "base_url=$BASE_URL" >> $GITHUB_OUTPUT
           echo "🎯 テスト環境: $ENVIRONMENT"
           echo "🌐 テストURL: $BASE_URL"
+          echo "⏰ テスト開始時間: $(date -u '+%Y-%m-%d %H:%M:%S') UTC"
 
       - name: Playwrightテストを実行
-        run: npm run cloudjp
+        id: run-tests
+        run: |
+          echo "Running tests against ${{ steps.determine-env.outputs.base_url }}"
+          npm run cloudjp || TEST_EXIT_CODE=$?
+          
+          if [ -n "$TEST_EXIT_CODE" ]; then
+            echo "test_result=failed" >> $GITHUB_OUTPUT
+            echo "❌ テスト失敗 (Exit code: $TEST_EXIT_CODE)"
+          else
+            echo "test_result=passed" >> $GITHUB_OUTPUT
+            echo "✅ テスト成功"
+          fi
         env:
           BASE_URL: ${{ steps.determine-env.outputs.base_url }}
       
@@ -57,19 +75,26 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ steps.determine-env.outputs.environment }}
-          path: playwright-report/
+          name: playwright-report-${{ steps.determine-env.outputs.environment }}-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-      - name: cloud.jpに成功ステータスを送信
-        if: success() && github.event.client_payload.environment == 'staging'
+      - name: cloud.jpにテスト結果を送信
+        if: github.event_name == 'repository_dispatch'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
           repository: richclaudfelixjp/cloud.jp
-          event-type: staging-tests-passed
+          event-type: e2e-test-complete
           client-payload: |
             {
               "commit_sha": "${{ github.event.client_payload.commit_sha }}",
-              "environment": "staging",
-              "test_result": "passed"
+              "environment": "${{ steps.determine-env.outputs.environment }}",
+              "test_result": "${{ steps.run-tests.outputs.test_result }}",
+              "test_url": "${{ steps.determine-env.outputs.base_url }}",
+              "run_id": "${{ github.run_id }}",
+              "run_timestamp": "$(date -u '+%Y-%m-%d %H:%M:%S')",
+              "triggered_by": "${{ github.event.client_payload.triggered_by || github.actor }}"
             }
