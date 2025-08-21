@@ -45,8 +45,8 @@ jobs:
           
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           echo "base_url=$BASE_URL" >> $GITHUB_OUTPUT
-          echo "🎯 Testing environment: $ENVIRONMENT"
-          echo "🌐 Testing URL: $BASE_URL"
+          echo "🎯 テスト環境: $ENVIRONMENT"
+          echo "🌐 テストURL: $BASE_URL"
 
       - name: Playwrightテストを実行
         run: npm run cloudjp
