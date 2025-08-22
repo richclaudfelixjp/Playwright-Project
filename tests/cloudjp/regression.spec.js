@@ -7,11 +7,11 @@ test('ナビゲーションチェック', async ({ page }) => {
   // 自己紹介セクションへのナビゲーション
   await page.getByRole('link', { name: '自己紹介' }).click();
   await expect(page.getByRole('heading', { name: '自己紹介' })).toBeVisible(); // 自己紹介ページが表示されることを確認
-  
-  // 経歴セクションへのナビゲーション
-  await page.getByRole('link', { name: '経歴' }).click();
-  await expect(page.getByRole('heading', { name: '経歴' })).toBeVisible(); // 経歴ページが表示されることを確認
-  
+
+  // 職歴セクションへのナビゲーション
+  await page.getByRole('link', { name: '職歴' }).click();
+  await expect(page.getByRole('heading', { name: '職歴' })).toBeVisible(); // 職歴ページが表示されることを確認
+
   // プロジェクトセクションへのナビゲーション
   await page.getByRole('link', { name: 'プロジェクト' }).click();
   await expect(page.getByRole('heading', { name: 'プロジェクト', exact: true })).toBeVisible(); // プロジェクトページが表示されることを確認
