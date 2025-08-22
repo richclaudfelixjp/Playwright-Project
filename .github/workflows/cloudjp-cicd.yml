@@ -58,7 +58,7 @@ jobs:
       - name: Playwrightテストを実行
         id: run-tests
         run: |
-          echo "Running tests against ${{ steps.determine-env.outputs.base_url }}"
+          echo "テスト対象： ${{ steps.determine-env.outputs.base_url }}"
           npm run cloudjp || TEST_EXIT_CODE=$?
           
           if [ -n "$TEST_EXIT_CODE" ]; then
@@ -82,7 +82,6 @@ jobs:
           retention-days: 14
 
       - name: cloud.jpにテスト結果を送信
-        if: github.event_name == 'repository_dispatch'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
@@ -90,7 +89,7 @@ jobs:
           event-type: e2e-test-complete
           client-payload: |
             {
-              "commit_sha": "${{ github.event.client_payload.commit_sha }}",
+              "commit_sha": "${{ github.event.client_payload.commit_sha || github.sha }}",
               "environment": "${{ steps.determine-env.outputs.environment }}",
               "test_result": "${{ steps.run-tests.outputs.test_result }}",
               "test_url": "${{ steps.determine-env.outputs.base_url }}",
