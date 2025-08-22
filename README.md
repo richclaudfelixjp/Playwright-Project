@@ -6,7 +6,7 @@ PlaywrightとCI/CD連携を実装したエンドツーエンドUIおよびAPIテ
 
 - **UIテスト**: [SauceDemo](https://www.saucedemo.com/)のEコマースフロー
 - **APIテスト**: [ReqRes](https://reqres.in/api/)の認証フロー
-- **高度なUI**: [DemoQA](https://demoqa.com/)の複雑な操作
+- **高度なUIテスト**: [DemoQA](https://demoqa.com/)の複雑な操作
 - **ポートフォリオテスト**: [cloud.jp](https://cloudjp.netlify.app)の自動テスト
 
 ## 🔄 CI/CD連携
