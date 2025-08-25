@@ -6,7 +6,7 @@ PlaywrightとCI/CD連携を実装したエンドツーエンドUIおよびAPIテ
 
 - **UIテスト**: [SauceDemo](https://www.saucedemo.com/)のEコマースフロー
 - **APIテスト**: [ReqRes](https://reqres.in/api/)の認証フロー
-- **高度なUIテスト**: [DemoQA](https://demoqa.com/)の複雑な操作
+- **高度なテスト**: [DemoQA](https://demoqa.com/)の複雑な操作
 - **ポートフォリオテスト**: [cloud.jp](https://cloudjp.netlify.app)の自動テスト
 
 ## 🔄 CI/CD連携
@@ -27,7 +27,7 @@ PlaywrightとCI/CD連携を実装したエンドツーエンドUIおよびAPIテ
 
 ## 🚀 ローカルでのテスト実行
 
-1. `.env.example`を`.env`にリネームしAPI_KEY=reqres-free-v1を追加
+1. `.env.example`を`.env`にリネームしファイルの中にAPI_KEY=reqres-free-v1を追加
 2. 依存関係をインストール:
    ```bash
    npm install
