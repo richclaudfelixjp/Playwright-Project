@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "external": "npx playwright test tests/reqres tests/saucedemo",
+    "external": "npx playwright test tests/reqres tests/saucedemo tests/demoqa",
     "cloudjp": "npx playwright test tests/cloudjp"
   },
   "keywords": [],
