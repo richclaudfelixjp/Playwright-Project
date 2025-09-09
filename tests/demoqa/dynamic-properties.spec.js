@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.skip('動的プロパティ - 有効化ボタンの待機', async ({ page }) => {
+test('動的プロパティ - 有効化ボタンの待機', async ({ page }) => {
   await page.goto('https://demoqa.com/dynamic-properties'); //動的プロパティページに移動
 
   const enableAfterButton = page.locator('#enableAfter'); //5秒後に有効になるボタンを取得
@@ -13,9 +13,10 @@ test.skip('動的プロパティ - 有効化ボタンの待機', async ({ page }
   
   // 有効になったボタンをクリック
   await enableAfterButton.click(); //有効になったボタンをクリック
+  
 });
 
-test.skip('動的プロパティ - 色の変化確認', async ({ page }) => {
+test('動的プロパティ - 色の変化確認', async ({ page }) => {
   await page.goto('https://demoqa.com/dynamic-properties'); //動的プロパティページに移動
 
   const colorChangeButton = page.locator('#colorChange'); //色が変わるボタンを取得
@@ -27,7 +28,7 @@ test.skip('動的プロパティ - 色の変化確認', async ({ page }) => {
   await expect(colorChangeButton).toHaveCSS('color', 'rgb(220, 53, 69)', { timeout: 6000 }); //6秒のタイムアウトで色が赤に変わることを待機
 });
 
-test.skip('動的プロパティ - 要素の表示確認', async ({ page }) => {
+test('動的プロパティ - 要素の表示確認', async ({ page }) => {
   await page.goto('https://demoqa.com/dynamic-properties'); //動的プロパティページに移動
 
   const visibleAfterButton = page.locator('#visibleAfter'); //5秒後に表示されるボタンを取得
@@ -42,7 +43,7 @@ test.skip('動的プロパティ - 要素の表示確認', async ({ page }) => {
   await visibleAfterButton.click(); //表示されたボタンをクリック
 });
 
-test.skip('動的プロパティ - 複数の変化の同時確認', async ({ page }) => {
+test('動的プロパティ - 複数の変化の同時確認', async ({ page }) => {
   await page.goto('https://demoqa.com/dynamic-properties'); //動的プロパティページに移動
 
   const enableAfterButton = page.locator('#enableAfter'); //有効化ボタンを取得
