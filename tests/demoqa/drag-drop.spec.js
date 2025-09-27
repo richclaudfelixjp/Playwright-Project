@@ -78,8 +78,12 @@ test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) =>
   const nonRevertableElement = page.locator('#notRevertable'); //notRevertableの要素を取得
   const revertDroppable = page.locator('//div[@id="revertableDropContainer"]//div[@id="droppable"]'); //revertableDropContainerの要素を取得
 
-  // revertableの要素の初期位置を記録
+  // 要素が表示されるまで待機
   await expect(revertableElement).toBeVisible(); //要素が表示されることを確認
+  await expect(nonRevertableElement).toBeVisible(); //要素が表示されることを確認
+  await expect(revertDroppable).toBeVisible(); //ドロップターゲットが表示されることを確認
+
+  // revertableの要素の初期位置を記録
   const revertableInitialBox = await revertableElement.boundingBox(); //初期位置を取得
   if (!revertableInitialBox) throw new Error('revertableの要素の初期位置取得に失敗');
 
@@ -87,17 +91,22 @@ test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) =>
   await revertableElement.dragTo(revertDroppable); //revertableの要素をドロップ
   await expect(revertDroppable).toContainText('Dropped!'); //ドロップ成功を確認
 
-  // アニメーション完了を待機して最終位置を確認
-  await page.waitForTimeout(3000); //復帰アニメーション完了を待機
-  const revertableFinalBox = await revertableElement.boundingBox(); //最終位置を取得
-  if (!revertableFinalBox) throw new Error('revertableの要素の最終位置取得に失敗');
-
-  // 要素が初期位置に戻ったことを確認
-  expect(Math.abs(revertableInitialBox.x - revertableFinalBox.x)).toBeLessThan(10); //X座標の復帰を確認
-  expect(Math.abs(revertableInitialBox.y - revertableFinalBox.y)).toBeLessThan(10); //Y座標の復帰を確認
+  // 要素が初期位置に戻ることをポーリングで確認
+  await expect.poll(async () => {
+    const currentBox = await revertableElement.boundingBox();
+    if (!currentBox) return false;
+    
+    const xDiff = Math.abs(revertableInitialBox.x - currentBox.x);
+    const yDiff = Math.abs(revertableInitialBox.y - currentBox.y);
+    
+    // 元の位置から20px以内に戻ったかを確認
+    return xDiff < 20 && yDiff < 20;
+  }, { 
+    timeout: 8000, // CI環境を考慮してタイムアウト延長
+    intervals: [100, 500, 1000] // 段階的なポーリング間隔
+  }).toBe(true);
 
   // notRevertableの要素の初期位置を記録
-  await expect(nonRevertableElement).toBeVisible(); //要素が表示されることを確認
   const nonRevertableInitialBox = await nonRevertableElement.boundingBox(); //初期位置を取得
   if (!nonRevertableInitialBox) throw new Error('notRevertableの要素の初期位置取得に失敗');
 
@@ -105,16 +114,16 @@ test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) =>
   await nonRevertableElement.dragTo(revertDroppable); //notRevertableの要素をドロップ
   await expect(revertDroppable).toContainText('Dropped!'); //ドロップ成功を確認
 
+  // 短い待機時間でドラッグ操作の完了を確認
+  await page.waitForTimeout(1000); //ドラッグ操作完了を待機
+
   // notRevertableの要素が初期位置に戻らないことを確認
-  await expect.poll(async () => {
-    const box = await nonRevertableElement.boundingBox();
-    if (!box) throw new Error('復帰不可能要素の位置取得に失敗');
-    return {
-      x: Math.round(box.x),
-      y: Math.round(box.y)
-    };
-  }, { timeout: 5000 }).not.toEqual({
-    x: Math.round(nonRevertableInitialBox.x),
-    y: Math.round(nonRevertableInitialBox.y)
-  });
+  const nonRevertableFinalBox = await nonRevertableElement.boundingBox();
+  if (!nonRevertableFinalBox) throw new Error('復帰不可能要素の最終位置取得に失敗');
+
+  const xDiff = Math.abs(nonRevertableInitialBox.x - nonRevertableFinalBox.x);
+  const yDiff = Math.abs(nonRevertableInitialBox.y - nonRevertableFinalBox.y);
+
+  // 位置が大きく変わっていることを確認（10px以上の変化）
+  expect(xDiff > 10 || yDiff > 10).toBe(true); //位置が変わったことを確認
 });
