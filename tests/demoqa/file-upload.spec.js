@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-test.skip('ファイルアップロード - 単一ファイル', async ({ page }) => {
+test('ファイルアップロード - 単一ファイル', async ({ page }) => {
   await page.goto('https://demoqa.com/upload-download'); //アップロードダウンロードページに移動
 
   // テスト用のファイルパスを設定
@@ -15,7 +15,7 @@ test.skip('ファイルアップロード - 単一ファイル', async ({ page }
   expect(uploadedPath).toContain('package.json'); //ファイル名が含まれていることを確認
 });
 
-test.skip('ファイルアップロード - 複数ファイルの処理', async ({ page }) => {
+test('ファイルアップロード - 複数ファイルの処理', async ({ page }) => {
   await page.goto('https://demoqa.com/upload-download'); //アップロードダウンロードページに移動
 
   // 複数のテストファイルパスを設定
@@ -35,7 +35,7 @@ test.skip('ファイルアップロード - 複数ファイルの処理', async 
   expect(uploadedPath).toContain('playwright.config.js'); //二番目のファイル名を確認
 });
 
-test.skip('ファイルアップロード - ファイル選択のクリア', async ({ page }) => {
+test('ファイルアップロード - ファイル選択のクリア', async ({ page }) => {
   await page.goto('https://demoqa.com/upload-download'); //アップロードダウンロードページに移動
 
   const testFilePath = path.join(__dirname, '..', '..', 'package.json'); //テストファイルパスを設定
@@ -49,11 +49,10 @@ test.skip('ファイルアップロード - ファイル選択のクリア', asy
   await page.setInputFiles('#uploadFile', []); //ファイル選択をクリア
 
   // ファイルパスが空になることを確認
-  uploadedPath = await page.textContent('#uploadedFilePath'); //ファイルパスを再取得
-  expect(uploadedPath).toBe(''); //ファイルパスが空であることを確認
+  await expect(page.locator('#uploadedFilePath')).not.toBeVisible(); // ファイルパスが非表示であることを確認
 });
 
-test.skip('ダウンロード機能の確認', async ({ page }) => {
+test('ダウンロード機能の確認', async ({ page }) => {
   await page.goto('https://demoqa.com/upload-download'); //アップロードダウンロードページに移動
 
   // ダウンロード処理を監視
