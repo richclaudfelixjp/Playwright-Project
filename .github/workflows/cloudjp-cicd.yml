@@ -1,93 +1,119 @@
+# cloud.jp向けのCI/CDワークフロー
+# 手動実行とリポジトリディスパッチの両方に対応
 name: cloudjp CI/CD
+
+# ワークフロートリガー設定
 on:
+  # 手動実行（GitHub UI経由）
   workflow_dispatch:
     inputs:
       environment:
-        description: 'テスト環境'
-        required: true
-        default: 'staging'
-        type: choice
+        description: 'テスト環境' # 環境選択の説明
+        required: true # 必須入力項目
+        default: 'staging' # デフォルト値をstagingに設定
+        type: choice # 選択式入力
         options:
-        - staging
-        - production
+        - staging # ステージング環境
+        - production # 本番環境
+  
+  # 外部リポジトリからのディスパッチ（cloud.jpから自動実行）
   repository_dispatch:
-    types: [cloudjp-test]
+    types: [cloudjp-test] # cloudjp-testイベントタイプを監視
 
+# ワークフローの権限設定
 permissions:
-  contents: read
-  checks: write
-  pull-requests: read
+  contents: read # リポジトリ内容の読み取り権限
+  checks: write # チェック結果の書き込み権限
+  pull-requests: read # プルリクエストの読み取り権限
 
+# ジョブ定義
 jobs:
-  cloudjp-tests:
-    runs-on: ubuntu-latest
+  cloudjp-tests: # cloud.jpテストジョブ
+    runs-on: ubuntu-latest # Ubuntu最新版で実行
     steps:
+      # ソースコードをチェックアウト
       - uses: actions/checkout@v4
+      
+      # Node.js環境をセットアップ（キャッシュ付き）
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: '18' # Node.js v18を使用
+          cache: 'npm' # npmキャッシュを有効化
       
+      # CI用の依存関係をインストール（npm ciで高速インストール）
       - name: CI用の依存関係をインストール
         run: npm ci
 
+      # CI用のPlaywrightブラウザをインストール（全ブラウザ対応）
       - name: CI用のPlaywrightをインストール
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install --with-deps chromium firefox webkit # Chrome、Firefox、Safari対応
 
+      # テスト環境とURLを動的に決定
       - name: テスト環境を決定
-        id: determine-env
+        id: determine-env # 他のステップから参照するためのID
         run: |
+          # リポジトリディスパッチの場合はペイロードから環境情報を取得
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            ENVIRONMENT="${{ github.event.client_payload.environment }}"
-            BASE_URL="${{ github.event.client_payload.url }}"
+            ENVIRONMENT="${{ github.event.client_payload.environment }}" # 外部から送信された環境設定
+            BASE_URL="${{ github.event.client_payload.url }}" # 外部から送信されたURL
           else
-            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            # 手動実行の場合は入力値と設定済みシークレットを使用
+            ENVIRONMENT="${{ github.event.inputs.environment }}" # 手動入力された環境設定
             if [[ "$ENVIRONMENT" == "production" ]]; then
-              BASE_URL="${{ secrets.PROD_URL }}"
+              BASE_URL="${{ secrets.PROD_URL }}" # 本番環境URL（シークレットから取得）
             else
-              BASE_URL="${{ secrets.STAGING_URL }}"
+              BASE_URL="${{ secrets.STAGING_URL }}" # ステージング環境URL（シークレットから取得）
             fi
           fi
           
+          # 環境変数を出力設定に保存（後続ステップで使用）
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           echo "base_url=$BASE_URL" >> $GITHUB_OUTPUT
+          
+          # テスト実行情報をログに出力
           echo "🎯 テスト環境: $ENVIRONMENT"
           echo "🌐 テストURL: $BASE_URL"
           echo "⏰ テスト開始時間: $(date -u '+%Y-%m-%d %H:%M:%S') UTC"
 
+      # cloud.jp向けPlaywrightテストを実行
       - name: Playwrightテストを実行
-        id: run-tests
+        id: run-tests # テスト結果を他のステップで参照するためのID
         run: |
-          echo "テスト対象： ${{ steps.determine-env.outputs.base_url }}"
-          npm run cloudjp || TEST_EXIT_CODE=$?
+          echo "テスト対象： ${{ steps.determine-env.outputs.base_url }}" # テスト対象URLを表示
           
+          # cloudjpテストを実行（失敗してもワークフローを継続）
+          npm run cloudjp || TEST_EXIT_CODE=$? # package.jsonで定義されたcloudjpスクリプトを実行
+          
+          # テスト結果を判定して出力設定に保存
           if [ -n "$TEST_EXIT_CODE" ]; then
-            echo "test_result=failed" >> $GITHUB_OUTPUT
-            echo "❌ テスト失敗 (Exit code: $TEST_EXIT_CODE)"
+            echo "test_result=failed" >> $GITHUB_OUTPUT # テスト失敗を記録
+            echo "❌ テスト失敗 (Exit code: $TEST_EXIT_CODE)" # 失敗ログを出力
           else
-            echo "test_result=passed" >> $GITHUB_OUTPUT
-            echo "✅ テスト成功"
+            echo "test_result=passed" >> $GITHUB_OUTPUT # テスト成功を記録
+            echo "✅ テスト成功" # 成功ログを出力
           fi
         env:
-          BASE_URL: ${{ steps.determine-env.outputs.base_url }}
+          BASE_URL: ${{ steps.determine-env.outputs.base_url }} # テスト対象URLを環境変数に設定
       
+      # テストレポートとテスト結果をアーティファクトとしてアップロード
       - name: テスト結果をアップロード
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ steps.determine-env.outputs.environment }}-${{ github.run_id }}
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 14
+          name: playwright-report-${{ steps.determine-env.outputs.environment }}-${{ github.run_id }} # 環境とランIDを含む一意な名前
+          path: | # アップロード対象のパス
+            playwright-report/ # HTMLレポート
+            test-results/ # テスト実行結果ファイル
+          retention-days: 14 # 保存期間（14日間）
 
+      # cloud.jpリポジトリにテスト完了を通知
       - name: cloud.jpにテスト結果を送信
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.CLOUD_JP_REPO_TOKEN }}
-          repository: richclaudfelixjp/cloud.jp
-          event-type: e2e-test-complete
-          client-payload: |
+          token: ${{ secrets.CLOUD_JP_REPO_TOKEN }} # cloud.jpリポジトリアクセス用トークン
+          repository: richclaudfelixjp/cloud.jp # 通知先リポジトリ
+          event-type: e2e-test-complete # イベントタイプ（cloud.jpで監視）
+          client-payload: | # 送信するデータペイロード
             {
               "commit_sha": "${{ github.event.client_payload.commit_sha || github.sha }}",
               "environment": "${{ steps.determine-env.outputs.environment }}",

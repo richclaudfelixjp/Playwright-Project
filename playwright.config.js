@@ -24,13 +24,13 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'webkit', //WebKit（Safari）ブラウザでテストを実行
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
       name: 'firefox', //Firefoxブラウザでテストを実行
       use: { ...devices['Desktop Firefox'] },
     },
-    {
-      name: 'webkit', //WebKit（Safari）ブラウザでテストを実行
-      use: { ...devices['Desktop Safari'] },
-    }
   ],
 });
 

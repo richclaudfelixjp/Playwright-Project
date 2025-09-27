@@ -1,31 +1,50 @@
+# 外部アプリケーション用のCI/CDワークフロー
+# External Apps向けのPlaywrightテストを自動実行
 name: External Apps CI
+
+# ワークフロートリガー設定
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master ] # メインブランチへのプッシュ時に実行
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master ] # メインブランチへのプルリクエスト時に実行
+
+# ジョブ定義
 jobs:
-  externalapps-tests:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
+  externalapps-tests: # 外部アプリケーションテストジョブ
+    timeout-minutes: 60 # タイムアウト設定（60分）
+    runs-on: ubuntu-latest # Ubuntu最新版で実行
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: CI用の依存関係をインストール
-      run: npm ci
-    - name: Playwrightブラウザをインストール
-      run: npx playwright install --with-deps
-    - name: 環境変数ファイルを作成
-      run: echo "API_KEY=$API_KEY" > .env
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
-    - name: テストを実行
-      run: npm run external
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      # ソースコードをチェックアウト
+      - uses: actions/checkout@v4
+      
+      # Node.js環境をセットアップ
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/* # Node.js LTS版を使用
+      
+      # CI用の依存関係をインストール（npm ciで高速インストール）
+      - name: CI用の依存関係をインストール
+        run: npm ci
+      
+      # Playwrightブラウザとシステム依存関係をインストール
+      - name: Playwrightブラウザをインストール
+        run: npx playwright install --with-deps
+      
+      # 環境変数ファイルを作成（APIキーを設定）
+      - name: 環境変数ファイルを作成
+        run: echo "API_KEY=$API_KEY" > .env # .envファイルにAPIキーを書き込み
+        env:
+          API_KEY: ${{ secrets.API_KEY }} # GitHubシークレットからAPIキーを取得
+      
+      # 外部アプリケーションテストを実行
+      - name: テストを実行
+        run: npm run external # package.jsonで定義されたexternalスクリプトを実行
+      
+      # テストレポートをアーティファクトとしてアップロード
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report # アーティファクト名
+          path: playwright-report/ # アップロードするディレクトリ
+          retention-days: 30 # 保存期間（30日間）
