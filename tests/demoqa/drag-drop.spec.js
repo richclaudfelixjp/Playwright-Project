@@ -105,7 +105,7 @@ test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) =>
   await nonRevertableElement.dragTo(revertDroppable); //notRevertableの要素をドロップ
   await expect(revertDroppable).toContainText('Dropped!'); //ドロップ成功を確認
 
-  // 復帰不可能要素が初期位置に戻らないことを確認
+  // notRevertableの要素が初期位置に戻らないことを確認
   await expect.poll(async () => {
     const box = await nonRevertableElement.boundingBox();
     if (!box) throw new Error('復帰不可能要素の位置取得に失敗');

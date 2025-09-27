@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests', //テストディレクトリを指定
-  fullyParallel: false, //全てのテストを並列実行
+  fullyParallel: true, //全てのテストを並列実行
   forbidOnly: !!process.env.CI, //CI環境では.only()テストを禁止
   retries: process.env.CI ? 2 : 0, //CI環境では失敗時に2回再試行、ローカルでは再試行なし
   workers: process.env.CI ? 1 : undefined, //CI環境では1つのワーカー、ローカルでは自動設定
@@ -27,10 +27,10 @@ export default defineConfig({
       name: 'webkit', //WebKit（Safari）ブラウザでテストを実行
       use: { ...devices['Desktop Safari'] },
     },
-    //{
-      //name: 'firefox', //Firefoxブラウザでテストを実行
-      //use: { ...devices['Desktop Firefox'] },
-    //},
+    {
+      name: 'firefox', //Firefoxブラウザでテストを実行
+      use: { ...devices['Desktop Firefox'] },
+    },
   ],
 });
 
