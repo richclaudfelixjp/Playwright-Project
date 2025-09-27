@@ -26,28 +26,60 @@ test('ドラッグアンドドロップ - Accept タブ', async ({ page }) => {
   // Acceptタブに切り替え
   await page.click('#droppableExample-tab-accept'); //Acceptタブをクリック
   
+  // タブ切り替え後の要素読み込み完了を待機
+  await page.waitForLoadState('networkidle'); //ネットワーク通信完了を待機
+  
   const acceptableElement = page.locator('#acceptable'); //受け入れ可能な要素を取得
   const notAcceptableElement = page.locator('#notAcceptable'); //受け入れ不可能な要素を取得
   const acceptDroppable = page.locator('//div[@id="acceptDropContainer"]//div[@id="droppable"]'); //表示中のドロップターゲット要素のみ取得
 
+  // 全要素が表示されるまで待機
+  await expect(acceptableElement).toBeVisible(); //受け入れ可能な要素が表示されることを確認
+  await expect(notAcceptableElement).toBeVisible(); //受け入れ不可能な要素が表示されることを確認
+  await expect(acceptDroppable).toBeVisible(); //ドロップターゲットが表示されることを確認
+
   // 受け入れ可能な要素でのドラッグアンドドロップ
   await acceptableElement.dragTo(acceptDroppable); //受け入れ可能な要素をドロップ
-  await expect(acceptDroppable).toContainText('Dropped!'); //ドロップ成功を確認
+  await expect(acceptDroppable).toContainText('Dropped!', { timeout: 5000 }); //ドロップ成功を確認
 
   // ページをリロードして初期状態に戻す
   await page.reload(); //ページをリロード
+  await page.waitForLoadState('networkidle'); //リロード完了を待機
+  
+  // 再度Acceptタブに切り替え
   await page.click('#droppableExample-tab-accept'); //再度Acceptタブに切り替え
+  await page.waitForLoadState('networkidle'); //タブ切り替え完了を待機
+
+  // 要素を再取得（ページリロード後）
+  const notAcceptableElementReloaded = page.locator('#notAcceptable'); //受け入れ不可能な要素を再取得
+  const acceptDroppableReloaded = page.locator('//div[@id="acceptDropContainer"]//div[@id="droppable"]'); //ドロップターゲットを再取得
+
+  // 要素が再表示されるまで待機
+  await expect(notAcceptableElementReloaded).toBeVisible(); //受け入れ不可能な要素が表示されることを確認
+  await expect(acceptDroppableReloaded).toBeVisible(); //ドロップターゲットが表示されることを確認
 
   // 受け入れ不可能な要素でのドラッグアンドドロップ
-  await notAcceptableElement.dragTo(acceptDroppable); //受け入れ不可能な要素をドロップ
-  await expect(acceptDroppable).toContainText('Drop here'); //初期テキストのままであることを確認
-  await expect(acceptDroppable).not.toContainText('Dropped!'); //ドロップが受け入れられていないことを確認
+  await notAcceptableElementReloaded.dragTo(acceptDroppableReloaded); //受け入れ不可能な要素をドロップ
+  
+  // 短い待機でドラッグ操作完了を確認
+  await page.waitForTimeout(1000); //ドラッグ操作完了を待機
+  
+  // テキストが変わらないことを確認（初期状態のまま）
+  await expect(acceptDroppableReloaded).toContainText('Drop here', { timeout: 3000 }); //初期テキストのままであることを確認
+  
+  // より安全な方法でDropped!がないことを確認
+  const dropText = await acceptDroppableReloaded.textContent();
+  expect(dropText).not.toContain('Dropped!'); //ドロップが受け入れられていないことを確認
 });
 
 test('ドラッグアンドドロップ - Prevent Propagation', async ({ page }) => {
   await page.goto('https://demoqa.com/droppable'); //ドロップ可能ページに移動
 
+  // Prevent Propagationタブに切り替え
   await page.click('#droppableExample-tab-preventPropogation'); //Prevent Propagationタブに切り替え
+  
+  // タブ切り替え後の要素読み込み完了を待機
+  await page.waitForLoadState('networkidle'); //ネットワーク通信完了を待機
   
   const dragBox = page.locator('#dragBox'); //ドラッグボックスを取得
   const notGreedyDropBox = page.locator('#notGreedyDropBox'); //notGreedyDropBoxの要素を取得
@@ -55,17 +87,40 @@ test('ドラッグアンドドロップ - Prevent Propagation', async ({ page })
   const greedyDropBox = page.locator('#greedyDropBox'); //greedyDropBoxの要素を取得
   const greedyDropBoxInner = page.locator('#greedyDropBoxInner'); //greedyDropBoxInnerの要素を取得
 
+  // 全要素が表示されるまで待機
+  await expect(dragBox).toBeVisible(); //ドラッグボックスが表示されることを確認
+  await expect(notGreedyDropBox).toBeVisible(); //notGreedyDropBoxが表示されることを確認
+  await expect(notGreedyInnerDropBox).toBeVisible(); //notGreedyInnerDropBoxが表示されることを確認
+  await expect(greedyDropBox).toBeVisible(); //greedyDropBoxが表示されることを確認
+  await expect(greedyDropBoxInner).toBeVisible(); //greedyDropBoxInnerが表示されることを確認
+
+  // 最初のテスト: notGreedy（イベント伝播あり）
   await dragBox.dragTo(notGreedyInnerDropBox); //notGreedyInnerDropBoxの要素にドロップ
-  await expect(notGreedyDropBox).toHaveText(/Dropped!/); //外側もテキスト変更を確認（イベント伝播）
-  await expect(notGreedyInnerDropBox).toHaveText(/Dropped!/); //内部のテキスト変更を確認
+  await expect(notGreedyDropBox).toHaveText(/Dropped!/, { timeout: 5000 }); //外側もテキスト変更を確認（イベント伝播）
+  await expect(notGreedyInnerDropBox).toHaveText(/Dropped!/, { timeout: 3000 }); //内部のテキスト変更を確認
 
   // ページをリロードして初期状態に戻す
   await page.reload(); //ページをリロード
+  await page.waitForLoadState('networkidle'); //リロード完了を待機
+  
+  // 再度タブに切り替え
   await page.click('#droppableExample-tab-preventPropogation'); //再度タブに切り替え
+  await page.waitForLoadState('networkidle'); //タブ切り替え完了を待機
 
-  await dragBox.dragTo(greedyDropBoxInner); //greedyDropBoxInnerの要素にドロップ
-  await expect(greedyDropBox).toHaveText(/Outer droppable/); //外側はテキスト変更なし（イベント伝播なし）
-  await expect(greedyDropBoxInner).toHaveText(/Dropped!/); //内部のテキスト変更を確認
+  // 要素を再取得（ページリロード後）
+  const dragBoxReloaded = page.locator('#dragBox'); //ドラッグボックスを再取得
+  const greedyDropBoxReloaded = page.locator('#greedyDropBox'); //greedyDropBoxを再取得
+  const greedyDropBoxInnerReloaded = page.locator('#greedyDropBoxInner'); //greedyDropBoxInnerを再取得
+
+  // 要素が再表示されるまで待機
+  await expect(dragBoxReloaded).toBeVisible(); //ドラッグボックスが表示されることを確認
+  await expect(greedyDropBoxReloaded).toBeVisible(); //greedyDropBoxが表示されることを確認
+  await expect(greedyDropBoxInnerReloaded).toBeVisible(); //greedyDropBoxInnerが表示されることを確認
+
+  // 2番目のテスト: greedy（イベント伝播なし）
+  await dragBoxReloaded.dragTo(greedyDropBoxInnerReloaded); //greedyDropBoxInnerの要素にドロップ
+  await expect(greedyDropBoxReloaded).toHaveText(/Outer droppable/, { timeout: 5000 }); //外側はテキスト変更なし（イベント伝播なし）
+  await expect(greedyDropBoxInnerReloaded).toHaveText(/Dropped!/, { timeout: 3000 }); //内部のテキスト変更を確認
 });
 
 test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) => {
