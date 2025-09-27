@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "external": "npx playwright test tests/reqres tests/saucedemo tests/demoqa",
-    "cloudjp": "npx playwright test tests/cloudjp"
+    "cloudjp": "npx playwright test tests/cloudjp",
+    "api": "npx playwright test tests/demoqa/bookstore-api.spec.js",
+    "ui": "npx playwright test tests/demoqa --ignore='**/bookstore-api.spec.js'"
   },
   "keywords": [],
   "author": "",
