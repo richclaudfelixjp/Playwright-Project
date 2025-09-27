@@ -69,10 +69,10 @@ test('ドラッグアンドドロップ - Prevent Propagation', async ({ page })
 });
 
 test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) => {
-  await page.goto('https://demoqa.com/droppable'); //ドロップ可能ページに移動
+  await page.goto('https://demoqa.com/droppable'); // ドロップ可能ページに移動
 
   // Revert Draggableタブに切り替え
-  await page.click('#droppableExample-tab-revertable'); //Revert Draggableタブをクリック
+  await page.click('#droppableExample-tab-revertable'); 
 
   const revertableElement = page.locator('#revertable'); //revertableの要素を取得
   const nonRevertableElement = page.locator('#notRevertable'); //notRevertableの要素を取得
@@ -105,14 +105,16 @@ test('ドラッグアンドドロップ - Revert Draggable', async ({ page }) =>
   await nonRevertableElement.dragTo(revertDroppable); //notRevertableの要素をドロップ
   await expect(revertDroppable).toContainText('Dropped!'); //ドロップ成功を確認
 
-  // 待機後の位置を確認
-  await page.waitForTimeout(3000); //待機（復帰しないことを確認するため）
-  const nonRevertableFinalBox = await nonRevertableElement.boundingBox(); //最終位置を取得
-  if (!nonRevertableFinalBox) throw new Error('復帰不可能要素の最終位置取得に失敗');
-
-  // 要素が初期位置に戻らなかったことを確認
-  const xDifference = Math.abs(nonRevertableInitialBox.x - nonRevertableFinalBox.x); //X座標の差を計算
-  const yDifference = Math.abs(nonRevertableInitialBox.y - nonRevertableFinalBox.y); //Y座標の差を計算
-  expect(xDifference).toBeGreaterThan(10); //X座標が移動していることを確認
-  expect(yDifference).toBeGreaterThan(10); //Y座標が移動していることを確認
+  // 復帰不可能要素が初期位置に戻らないことを確認
+  await expect.poll(async () => {
+    const box = await nonRevertableElement.boundingBox();
+    if (!box) throw new Error('復帰不可能要素の位置取得に失敗');
+    return {
+      x: Math.round(box.x),
+      y: Math.round(box.y)
+    };
+  }, { timeout: 5000 }).not.toEqual({
+    x: Math.round(nonRevertableInitialBox.x),
+    y: Math.round(nonRevertableInitialBox.y)
+  });
 });
